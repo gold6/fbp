@@ -11,7 +11,6 @@ from sklearn.metrics import roc_auc_score
 import pylab as pl
 import numpy as np
 
-
 def RandomForest(data, i, horizon, itr, default):
 	
 	#horizon = int(raw_input("What is the horizon we want to predict in months? "))
@@ -61,8 +60,8 @@ def RandomForest(data, i, horizon, itr, default):
 
 			y_predict = rf.predict(X_test)
 
-
 			y_prob = rf.predict_proba(X_test)
+
 			computestats(y_predict, y_prob, count, y_test, f)
 		
 		count += 1
@@ -74,22 +73,69 @@ def GBM(data, i, horizon, itr, default):
 	#horizon = int(raw_input("What is the horizon we want to predict in months? "))
 		
 	f = open("GBM_Results.txt","w")
-	
+	best_acc = 0
+	best_mtry = 5
+	best_learn = .1
 	count = 0
 	#itr = int(raw_input("How many times should we iterate? "))
 	while count < itr: 
 		
 		X_train, y_train, X_test, y_test = handlecsv(data, count, horizon, i)
+		
+		if default == '1':
+			for k in range (1, 8):
+				for j in range (1, 50):
+					gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=j, learning_rate = (k*.1))
 
-		gbm = GradientBoostingClassifier(n_estimators = 30, max_depth = 15, max_features=12, learning_rate = 0.1)
+					gbm.fit(X_train, y_train)
 
-		gbm.fit(X_train, y_train)
+					y_predict = gbm.predict(X_test)
 
-		y_predict = gbm.predict(X_test)
+					y_prob = gbm.predict_proba(X_test)
+		
+					acc_score = accuracy_score(y_test, y_predict)
+					if acc_score > best_acc:
+						best_acc = acc_score
+						best_mtry = j
+						best_learn = k
+					f.write("\n" + "M_try: " + str(j) + "\n")
+					f.write("\n" + "Learning Rate: " + str((k*.1)) + "\n")
+					f.write("\n" + "Accuracy Score: " + str(acc_score) + "\n")
+					#computestats(y_predict, y_prob, count, y_test, f)
 
-		y_prob = gbm.predict_proba(X_test)
+			f.write("\n" + "Iteration: " + str(count) + " Best M_Try: " + str(best_mtry)+ "\n")
+			f.write("\n" + "Iteration: " + str(count) + " Best Learning Rate: " + str(best_learn*.1)+ "\n")			
+			
+			gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=best_mtry, learning_rate = (best_learn*.1))
 
-		computestats(y_predict, y_prob, count, y_test, f)
+			gbm.fit(X_train, y_train)
+
+			y_predict = gbm.predict(X_test)
+
+			y_prob = gbm.predict_proba(X_test)
+
+			computestats(y_predict, y_prob, count, y_test, f)
+		else:
+
+			gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=12, learning_rate = 0.1)
+
+			gbm.fit(X_train, y_train)
+
+			y_predict = gbm.predict(X_test)
+
+			y_prob = gbm.predict_proba(X_test)
+
+			computestats(y_predict, y_prob, count, y_test, f)
+
+		#gbm = GradientBoostingClassifier(n_estimators = 30, max_depth = 15, max_features=12, learning_rate = 0.1)
+
+		#gbm.fit(X_train, y_train)
+
+		#y_predict = gbm.predict(X_test)
+
+		#y_prob = gbm.predict_proba(X_test)
+
+		#computestats(y_predict, y_prob, count, y_test, f)
 		
 		count += 1
 
