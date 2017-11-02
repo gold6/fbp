@@ -42,7 +42,7 @@ def RandomForest(data, i, horizon, itr, default):
 				#f.write("\n" + "M_try: " + str(j) + "\n")
 				#computestats(y_predict, y_prob, count, y_test, f)
 
-			f.write("\n" + str(best_mtry)+ "\n")
+			f.write("\n" + "Iteration: " + str(count) + " Best M_Try: " + str(best_mtry)+ "\n")
 			
 			rf = RandomForestClassifier(n_estimators=30, criterion='entropy', max_depth=15, max_features=best_mtry, random_state=1)
 
@@ -85,7 +85,7 @@ def GBM(data, i, horizon, itr, default):
 		if default == '1':
 			for k in range (1, 8):
 				for j in range (1, 50):
-					gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=j, learning_rate = (k*.1))
+					gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=j, learning_rate = (k*.1), random_state=1)
 
 					gbm.fit(X_train, y_train)
 
@@ -98,15 +98,15 @@ def GBM(data, i, horizon, itr, default):
 						best_acc = acc_score
 						best_mtry = j
 						best_learn = k
-					f.write("\n" + "M_try: " + str(j) + "\n")
-					f.write("\n" + "Learning Rate: " + str((k*.1)) + "\n")
-					f.write("\n" + "Accuracy Score: " + str(acc_score) + "\n")
+					#f.write("\n" + "M_try: " + str(j) + "\n")
+					#f.write("\n" + "Learning Rate: " + str((k*.1)) + "\n")
+					#f.write("\n" + "Accuracy Score: " + str(acc_score) + "\n")
 					#computestats(y_predict, y_prob, count, y_test, f)
 
 			f.write("\n" + "Iteration: " + str(count) + " Best M_Try: " + str(best_mtry)+ "\n")
 			f.write("\n" + "Iteration: " + str(count) + " Best Learning Rate: " + str(best_learn*.1)+ "\n")			
 			
-			gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=best_mtry, learning_rate = (best_learn*.1))
+			gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=best_mtry, learning_rate = (best_learn*.1), random_state=1)
 
 			gbm.fit(X_train, y_train)
 
@@ -117,7 +117,7 @@ def GBM(data, i, horizon, itr, default):
 			computestats(y_predict, y_prob, count, y_test, f)
 		else:
 
-			gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=12, learning_rate = 0.1)
+			gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=12, learning_rate = 0.1, random_state=1)
 
 			gbm.fit(X_train, y_train)
 
