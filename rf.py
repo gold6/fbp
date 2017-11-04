@@ -1,25 +1,25 @@
 import pandas as pd
 from sklearn.preprocessing import Imputer
-#from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn import svm
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import explained_variance_score
 import pylab as pl
 import numpy as np
 
 def RandomForest(data, i, horizon, itr, default):
-	
-	#horizon = int(raw_input("What is the horizon we want to predict in months? "))
 		
 	f = open("RF_Results.txt","w")
 	best_acc = 0
 	best_mtry = 5
 	count = 0
-	#itr = int(raw_input("How many times should we iterate? "))
+	
 	while count < itr: 
 		
 		X_train, y_train, X_test, y_test = handlecsv(data, count, horizon, i)
@@ -51,8 +51,8 @@ def RandomForest(data, i, horizon, itr, default):
 			y_predict = rf.predict(X_test)
 
 			y_prob = rf.predict_proba(X_test)
-
-			computestats(y_predict, y_prob, count, y_test, f)
+			acc_score = accuracy_score(y_test, y_predict)
+			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		else:
 			rf = RandomForestClassifier(n_estimators=30, criterion='entropy', max_depth=15, max_features=12, random_state=1)
 
@@ -61,23 +61,21 @@ def RandomForest(data, i, horizon, itr, default):
 			y_predict = rf.predict(X_test)
 
 			y_prob = rf.predict_proba(X_test)
-
-			computestats(y_predict, y_prob, count, y_test, f)
+			acc_score = accuracy_score(y_test, y_predict)
+			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		
 		count += 1
 
 	f.close()
 
 def GBM(data, i, horizon, itr, default):
-
-	#horizon = int(raw_input("What is the horizon we want to predict in months? "))
 		
 	f = open("GBM_Results.txt","w")
 	best_acc = 0
 	best_mtry = 5
 	best_learn = .1
 	count = 0
-	#itr = int(raw_input("How many times should we iterate? "))
+	
 	while count < itr: 
 		
 		X_train, y_train, X_test, y_test = handlecsv(data, count, horizon, i)
@@ -113,8 +111,9 @@ def GBM(data, i, horizon, itr, default):
 			y_predict = gbm.predict(X_test)
 
 			y_prob = gbm.predict_proba(X_test)
+			acc_score = accuracy_score(y_test, y_predict)
 
-			computestats(y_predict, y_prob, count, y_test, f)
+			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		else:
 
 			gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=12, learning_rate = 0.1, random_state=1)
@@ -124,18 +123,89 @@ def GBM(data, i, horizon, itr, default):
 			y_predict = gbm.predict(X_test)
 
 			y_prob = gbm.predict_proba(X_test)
+			acc_score = accuracy_score(y_test, y_predict)
 
-			computestats(y_predict, y_prob, count, y_test, f)
+			computestats(y_predict, y_prob, count, y_test, acc_score, f)
+		
+		count += 1
 
-		#gbm = GradientBoostingClassifier(n_estimators = 30, max_depth = 15, max_features=12, learning_rate = 0.1)
+	f.close()
 
-		#gbm.fit(X_train, y_train)
+def SVM(data, i, horizon, itr, default):#So far will only predict 1, haven't found a proper config yet
+		
+	f = open("SVM_Results.txt","w")
+	best_acc = 0
+	count = 0
+	
+	while count < itr: 
+		
+		X_train, y_train, X_test, y_test = handlecsv(data, count, horizon, i)
+		
+		if default == '1':
+			
+			#for j in range (1, 50):
+			#	svm_c = svm.NuSVC(probability = True, random_state=1)
 
-		#y_predict = gbm.predict(X_test)
+			#	svm_c.fit(X_train, y_train)
 
-		#y_prob = gbm.predict_proba(X_test)
+			#	y_predict = svm_c.predict(X_test)
 
-		#computestats(y_predict, y_prob, count, y_test, f)
+			#	y_prob = svm_c.predict_proba(X_test)
+	
+			#	acc_score = accuracy_score(y_test, y_predict)
+			#	if acc_score > best_acc:
+			#		best_acc = acc_score			
+			
+			svm_c = svm.NuSVC(probability = True, random_state=1)
+
+			svm_c.fit(X_train, y_train)
+
+			y_predict = svm_c.predict(X_test)
+
+			y_prob = svm_c.predict_proba(X_test)
+
+			acc_score = accuracy_score(y_test, y_predict)
+
+			computestats(y_predict, y_prob, count, y_test, acc_score, f)
+		else:
+
+			svm_c = svm.NuSVC(probability = True, random_state=1)
+
+			svm_c.fit(X_train, y_train)
+
+			y_predict = svm_c.predict(X_test)
+
+			y_prob = svm_c.predict_proba(X_test)
+
+			acc_score = accuracy_score(y_test, y_predict)
+
+			computestats(y_predict, y_prob, count, y_test, acc_score, f)
+		
+		count += 1
+
+	f.close()
+
+def LinReg(data, i, horizon, itr, default):
+		
+	f = open("LR_Results.txt","w")
+	best_acc = 0
+	count = 0
+	
+	while count < itr: 
+		
+		X_train, y_train, X_test, y_test = handlecsv(data, count, horizon, i)
+
+		lr = LogisticRegression(random_state=1)
+
+		lr.fit(X_train, y_train)
+
+		y_predict = lr.predict(X_test)
+
+		y_prob = lr.predict_proba(X_test)
+
+		acc_score = accuracy_score(y_test, y_predict)
+
+		computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		
 		count += 1
 
@@ -167,7 +237,7 @@ def handlecsv(data, count, horizon, i):
 	#np.savetxt('y_test'+str(count)+'.csv',y_test, delimiter=",")
 	return (X_train, y_train, X_test, y_test)
 
-def computestats(y_predict, y_prob, count, y_test, f):
+def computestats(y_predict, y_prob, count, y_test, acc_score, f):
 	precision, recall, thresholds= precision_recall_curve(y_test, y_predict)
 	pl.clf()
 	pl.plot(recall, precision)
@@ -186,18 +256,15 @@ def computestats(y_predict, y_prob, count, y_test, f):
 	f.write("\n" + " Iteration " + str(count) + "\n")
 	f.write(str(y_prob) + "\n")
 	f.write(str(y_predict) +"\n")
-	acc_score = accuracy_score(y_test, y_predict)
 	f.write(str(acc_score)+"\n")
-	#cm = confusion_matrix(y_test, y_predict)
 	f.write(str(pd.crosstab(y_test, y_predict, rownames=['True'], colnames=['Predicted'],margins=True))+"\n")
 	
 	#f.write(str(auc_score)+"\n")
 
 def main():
 	data = raw_input("Name the data .csv file: ")
-	#data2 = raw_input("Name the data file that want to predict: ")
 	i = raw_input("How much test data should we use (in years): ")
-	model = raw_input("What kind of model would you like to use?" + "\n" + "(1) Random Forest" + "\n" + "(2) GBM" + "\n" + "(3) Compare all methods" + "\n")
+	model = raw_input("What kind of model would you like to use?" + "\n" + "(1) Random Forest" + "\n" + "(2) GBM" + "\n" + "(3) SVM" + "\n"+ "(4) Linear Regression" + "\n"+ "(5) Compare all methods" + "\n")
 	default = raw_input("Should we finethebest parameters or use default?" + "\n" + "(1) Best" + "\n" + "(0) Default" + "\n")
 	horizon = int(raw_input("What is the horizon we want to predict in months? "))
 	itr = int(raw_input("How many times should we iterate? "))
@@ -206,8 +273,14 @@ def main():
 	if model=='2':
 		GBM(data, i, horizon, itr, default)
 	if model=='3':
+		SVM(data, i, horizon, itr, default)
+	if model=='4':
+		LinReg(data, i, horizon, itr, default)
+	if model=='5':
 		RandomForest(data, i, horizon, itr, default)
 		GBM(data, i, horizon, itr, default)
+		SVM(data, i, horizon, itr, default)
+		LinReg(data, i, horizon, itr, default)
 
 if __name__ == "__main__":
 	main()
