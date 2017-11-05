@@ -10,6 +10,7 @@ from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import explained_variance_score
+from rr_forest import RRForestClassifier
 import pylab as pl
 import numpy as np
 
@@ -61,6 +62,60 @@ def RandomForest(data, i, horizon, itr, default):
 			y_predict = rf.predict(X_test)
 
 			y_prob = rf.predict_proba(X_test)
+			acc_score = accuracy_score(y_test, y_predict)
+			computestats(y_predict, y_prob, count, y_test, acc_score, f)
+		
+		count += 1
+
+	f.close()
+def RotationForest(data, i, horizon, itr, default):
+		
+	f = open("RotF_Results.txt","w")
+	best_acc = 0
+	best_mtry = 5
+	count = 0
+	
+	while count < itr: 
+		
+		X_train, y_train, X_test, y_test = handlecsv(data, count, horizon, i)
+		
+		if default == '1':
+		
+			for j in range (1, 50):
+				rotf = RRForestClassifier(n_estimators=30, criterion='entropy', max_depth=15, max_features=j, random_state=1)
+
+				rotf.fit(X_train, y_train)
+
+				y_predict = rotf.predict(X_test)
+
+				y_prob = rotf.predict_proba(X_test)
+		
+				acc_score = accuracy_score(y_test, y_predict)
+				if acc_score > best_acc:
+					best_acc = acc_score
+					best_mtry = j
+				#f.write("\n" + "M_try: " + str(j) + "\n")
+				#computestats(y_predict, y_prob, count, y_test, f)
+
+			f.write("\n" + "Iteration: " + str(count) + " Best M_Try: " + str(best_mtry)+ "\n")
+			
+			rotf = RRForestClassifier(n_estimators=30, criterion='entropy', max_depth=15, max_features=best_mtry, random_state=1)
+
+			rotf.fit(X_train, y_train)
+
+			y_predict = rotf.predict(X_test)
+
+			y_prob = rotf.predict_proba(X_test)
+			acc_score = accuracy_score(y_test, y_predict)
+			computestats(y_predict, y_prob, count, y_test, acc_score, f)
+		else:
+			rotf = RRForestClassifier(n_estimators=30, criterion='entropy', max_depth=15, max_features=12, random_state=1)
+
+			rotf.fit(X_train, y_train)
+
+			y_predict = rotf.predict(X_test)
+
+			y_prob = rotf.predict_proba(X_test)
 			acc_score = accuracy_score(y_test, y_predict)
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		
@@ -264,7 +319,7 @@ def computestats(y_predict, y_prob, count, y_test, acc_score, f):
 def main():
 	data = raw_input("Name the data .csv file: ")
 	i = raw_input("How much test data should we use (in years): ")
-	model = raw_input("What kind of model would you like to use?" + "\n" + "(1) Random Forest" + "\n" + "(2) GBM" + "\n" + "(3) SVM" + "\n"+ "(4) Linear Regression" + "\n"+ "(5) Compare all methods" + "\n")
+	model = raw_input("What kind of model would you like to use?" + "\n" + "(1) Random Forest" + "\n" + "(2) GBM" + "\n" + "(3) SVM" + "\n"+ "(4) Linear Regression" + "\n"+ "(5) Rotational Forest" + "\n"+ "(6) Compare all methods" + "\n")
 	default = raw_input("Should we finethebest parameters or use default?" + "\n" + "(1) Best" + "\n" + "(0) Default" + "\n")
 	horizon = int(raw_input("What is the horizon we want to predict in months? "))
 	itr = int(raw_input("How many times should we iterate? "))
@@ -277,10 +332,13 @@ def main():
 	if model=='4':
 		LinReg(data, i, horizon, itr, default)
 	if model=='5':
+		RotationForest(data, i, horizon, itr, default)
+	if model=='6':
 		RandomForest(data, i, horizon, itr, default)
 		GBM(data, i, horizon, itr, default)
 		SVM(data, i, horizon, itr, default)
 		LinReg(data, i, horizon, itr, default)
+		RotationForest(data, i, horizon, itr, default)
 
 if __name__ == "__main__":
 	main()
