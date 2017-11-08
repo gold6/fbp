@@ -27,8 +27,8 @@ def RandomForest(data, i, horizon, itr, default):
 		
 		if default == '1':
 		
-			for j in range (1, 50):
-				rf = RandomForestClassifier(n_estimators=30, criterion='entropy', max_depth=15, max_features=j, random_state=1)
+			for j in range (1, 25):
+				rf = RandomForestClassifier(n_estimators=1000, criterion='entropy', max_features=j, random_state=1)
 
 				rf.fit(X_train, y_train)
 
@@ -45,7 +45,7 @@ def RandomForest(data, i, horizon, itr, default):
 
 			f.write("\n" + "Iteration: " + str(count) + " Best M_Try: " + str(best_mtry)+ "\n")
 			
-			rf = RandomForestClassifier(n_estimators=30, criterion='entropy', max_depth=15, max_features=best_mtry, random_state=1)
+			rf = RandomForestClassifier(n_estimators=1000, criterion='entropy', max_features=best_mtry, random_state=1)
 
 			rf.fit(X_train, y_train)
 
@@ -55,7 +55,7 @@ def RandomForest(data, i, horizon, itr, default):
 			acc_score = accuracy_score(y_test, y_predict)
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		else:
-			rf = RandomForestClassifier(n_estimators=30, criterion='entropy', max_depth=15, max_features=12, random_state=1)
+			rf = RandomForestClassifier(n_estimators=1000, criterion='entropy', max_features=12, random_state=1)
 
 			rf.fit(X_train, y_train)
 
@@ -127,8 +127,8 @@ def GBM(data, i, horizon, itr, default):
 		
 	f = open("GBM_Results.txt","w")
 	best_acc = 0
-	best_mtry = 5
-	best_learn = .1
+	best_depth = 2
+	best_learn = .01
 	count = 0
 	
 	while count < itr: 
@@ -136,9 +136,9 @@ def GBM(data, i, horizon, itr, default):
 		X_train, y_train, X_test, y_test = handlecsv(data, count, horizon, i)
 		
 		if default == '1':
-			for k in range (1, 8):
-				for j in range (1, 50):
-					gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=j, learning_rate = (k*.1), random_state=1)
+			for k in range (2, 8):
+				for j in [.01, .05, .1, .15]:
+					gbm = GradientBoostingClassifier(n_estimators=1500, max_depth=k, learning_rate = j, random_state=1)
 
 					gbm.fit(X_train, y_train)
 
@@ -149,17 +149,17 @@ def GBM(data, i, horizon, itr, default):
 					acc_score = accuracy_score(y_test, y_predict)
 					if acc_score > best_acc:
 						best_acc = acc_score
-						best_mtry = j
-						best_learn = k
+						best_depth = k
+						best_learn = j
 					#f.write("\n" + "M_try: " + str(j) + "\n")
 					#f.write("\n" + "Learning Rate: " + str((k*.1)) + "\n")
 					#f.write("\n" + "Accuracy Score: " + str(acc_score) + "\n")
 					#computestats(y_predict, y_prob, count, y_test, f)
 
-			f.write("\n" + "Iteration: " + str(count) + " Best M_Try: " + str(best_mtry)+ "\n")
-			f.write("\n" + "Iteration: " + str(count) + " Best Learning Rate: " + str(best_learn*.1)+ "\n")			
+			f.write("\n" + "Iteration: " + str(count) + " Best Depth: " + str(best_depth)+ "\n")
+			f.write("\n" + "Iteration: " + str(count) + " Best Learning Rate: " + str(best_learn)+ "\n")			
 			
-			gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=best_mtry, learning_rate = (best_learn*.1), random_state=1)
+			gbm = GradientBoostingClassifier(n_estimators=1500, max_depth=best_depth, learning_rate = best_learn, random_state=1)
 
 			gbm.fit(X_train, y_train)
 
@@ -171,7 +171,7 @@ def GBM(data, i, horizon, itr, default):
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		else:
 
-			gbm = GradientBoostingClassifier(n_estimators=30, max_depth=15, max_features=12, learning_rate = 0.1, random_state=1)
+			gbm = GradientBoostingClassifier(n_estimators=1500, max_depth=5, learning_rate = 0.1, random_state=1)
 
 			gbm.fit(X_train, y_train)
 
