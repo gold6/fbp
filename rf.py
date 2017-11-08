@@ -11,6 +11,7 @@ from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import explained_variance_score
 from rr_forest import RRForestClassifier
+from sklearn.grid_search import GridSearchCV
 import pylab as pl
 import numpy as np
 
@@ -136,31 +137,14 @@ def GBM(data, i, horizon, itr, default):
 		X_train, y_train, X_test, y_test = handlecsv(data, count, horizon, i)
 		
 		if default == '1':
-			for k in range (2, 8):
-				for j in [.01, .05, .1, .15]:
-					gbm = GradientBoostingClassifier(n_estimators=1500, max_depth=k, learning_rate = j, random_state=1)
-
-					gbm.fit(X_train, y_train)
-
-					y_predict = gbm.predict(X_test)
-
-					y_prob = gbm.predict_proba(X_test)
-		
-					acc_score = accuracy_score(y_test, y_predict)
-					if acc_score > best_acc:
-						best_acc = acc_score
-						best_depth = k
-						best_learn = j
-					#f.write("\n" + "M_try: " + str(j) + "\n")
-					#f.write("\n" + "Learning Rate: " + str((k*.1)) + "\n")
-					#f.write("\n" + "Accuracy Score: " + str(acc_score) + "\n")
-					#computestats(y_predict, y_prob, count, y_test, f)
-
-			f.write("\n" + "Iteration: " + str(count) + " Best Depth: " + str(best_depth)+ "\n")
-			f.write("\n" + "Iteration: " + str(count) + " Best Learning Rate: " + str(best_learn)+ "\n")			
+			param_test = {'n_estimators':range(100,1501,100), 'max_depth':range(2,8,1)}
+			gsearch = GridSearchCV(estimator = GradientBoostingClassifier(learning_rate=.05, random_state=1), param_grid = param_test)
+			gsearch.fit(X_train, y_train)
+			#f.write("\n" + "Scores: " + str(gsearch.grid_scores_) + "\n" + "Best Params: " + "\n" + str(gsearch.best_params_) + "\n" + "Best Score: " + str(gsearch.best_score_) + "\n")
 			
-			gbm = GradientBoostingClassifier(n_estimators=1500, max_depth=best_depth, learning_rate = best_learn, random_state=1)
-
+			gbm = gsearch.best_estimator_ #GradientBoostingClassifier(n_estimators=n_est, max_depth=max_d, learning_rate = .05, random_state=1)
+			f.write(str(gbm))
+			print gbm
 			gbm.fit(X_train, y_train)
 
 			y_predict = gbm.predict(X_test)
@@ -169,6 +153,39 @@ def GBM(data, i, horizon, itr, default):
 			acc_score = accuracy_score(y_test, y_predict)
 
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
+			#for k in range (2, 8):
+			#	for j in [.01, .05, .1, .15]:
+			#		gbm = GradientBoostingClassifier(n_estimators=1500, max_depth=k, learning_rate = j, random_state=1)
+
+			#		gbm.fit(X_train, y_train)
+
+			#		y_predict = gbm.predict(X_test)
+
+			#		y_prob = gbm.predict_proba(X_test)
+		
+			#		acc_score = accuracy_score(y_test, y_predict)
+			#		if acc_score > best_acc:
+			#			best_acc = acc_score
+			#			best_depth = k
+			#			best_learn = j
+					#f.write("\n" + "M_try: " + str(j) + "\n")
+					#f.write("\n" + "Learning Rate: " + str((k*.1)) + "\n")
+					#f.write("\n" + "Accuracy Score: " + str(acc_score) + "\n")
+					#computestats(y_predict, y_prob, count, y_test, f)
+
+			#f.write("\n" + "Iteration: " + str(count) + " Best Depth: " + str(best_depth)+ "\n")
+			#f.write("\n" + "Iteration: " + str(count) + " Best Learning Rate: " + str(best_learn)+ "\n")			
+			
+			#gbm = GradientBoostingClassifier(n_estimators=1500, max_depth=best_depth, learning_rate = best_learn, random_state=1)
+
+			#gbm.fit(X_train, y_train)
+
+			#y_predict = gbm.predict(X_test)
+
+			#y_prob = gbm.predict_proba(X_test)
+			#acc_score = accuracy_score(y_test, y_predict)
+
+			#computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		else:
 
 			gbm = GradientBoostingClassifier(n_estimators=1500, max_depth=5, learning_rate = 0.1, random_state=1)
@@ -320,7 +337,7 @@ def main():
 	data = raw_input("Name the data .csv file: ")
 	i = raw_input("How much test data should we use (in years): ")
 	model = raw_input("What kind of model would you like to use?" + "\n" + "(1) Random Forest" + "\n" + "(2) GBM" + "\n" + "(3) SVM" + "\n"+ "(4) Linear Regression" + "\n"+ "(5) Rotational Forest" + "\n"+ "(6) Compare all methods" + "\n")
-	default = raw_input("Should we finethebest parameters or use default?" + "\n" + "(1) Best" + "\n" + "(0) Default" + "\n")
+	default = raw_input("Should we find the best parameters or use default?" + "\n" + "(1) Best" + "\n" + "(0) Default" + "\n")
 	horizon = int(raw_input("What is the horizon we want to predict in months? "))
 	itr = int(raw_input("How many times should we iterate? "))
 	if model=='1':
