@@ -27,26 +27,32 @@ def RandomForest(data, i, horizon, itr, default):
 		X_train, y_train, X_test, y_test = handlecsv(data, count, horizon, i)
 		
 		if default == '1':
+			param_test = {'max_features':range(2,26,1)}
+			gsearch = GridSearchCV(estimator = RandomForestClassifier(n_estimators=1000, criterion='entropy', random_state=1), param_grid = param_test,scoring='accuracy', n_jobs=4, cv=10)
+			gsearch.fit(X_train, y_train)
+			#f.write("\n" + "Scores: " + str(gsearch.grid_scores_) + "\n" + "Best Params: " + "\n" + str(gsearch.best_params_) + "\n" + "Best Score: " + str(gsearch.best_score_) + "\n")
+			
+			rf = gsearch.best_estimator_
+			f.write(str(rf))
+			#for j in range (1, 25):
+			#	rf = RandomForestClassifier(n_estimators=1000, criterion='entropy', max_features=j, random_state=1)
+
+			#	rf.fit(X_train, y_train)
+
+			#	y_predict = rf.predict(X_test)
+
+			#	y_prob = rf.predict_proba(X_test)
 		
-			for j in range (1, 25):
-				rf = RandomForestClassifier(n_estimators=1000, criterion='entropy', max_features=j, random_state=1)
-
-				rf.fit(X_train, y_train)
-
-				y_predict = rf.predict(X_test)
-
-				y_prob = rf.predict_proba(X_test)
-		
-				acc_score = accuracy_score(y_test, y_predict)
-				if acc_score > best_acc:
-					best_acc = acc_score
-					best_mtry = j
+			#	acc_score = accuracy_score(y_test, y_predict)
+			#	if acc_score > best_acc:
+			#		best_acc = acc_score
+			#		best_mtry = j
 				#f.write("\n" + "M_try: " + str(j) + "\n")
 				#computestats(y_predict, y_prob, count, y_test, f)
 
-			f.write("\n" + "Iteration: " + str(count) + " Best M_Try: " + str(best_mtry)+ "\n")
+			#f.write("\n" + "Iteration: " + str(count) + " Best M_Try: " + str(best_mtry)+ "\n")
 			
-			rf = RandomForestClassifier(n_estimators=1000, criterion='entropy', max_features=best_mtry, random_state=1)
+			#rf = RandomForestClassifier(n_estimators=1000, criterion='entropy', max_features=best_mtry, random_state=1)
 
 			rf.fit(X_train, y_train)
 
@@ -138,7 +144,7 @@ def GBM(data, i, horizon, itr, default):
 		
 		if default == '1':
 			param_test = {'n_estimators':range(100,1501,100), 'max_depth':range(2,8,1)}
-			gsearch = GridSearchCV(estimator = GradientBoostingClassifier(learning_rate=.05, random_state=1), param_grid = param_test)
+			gsearch = GridSearchCV(estimator = GradientBoostingClassifier(learning_rate=.05, random_state=1), param_grid = param_test, cv=10)
 			gsearch.fit(X_train, y_train)
 			#f.write("\n" + "Scores: " + str(gsearch.grid_scores_) + "\n" + "Best Params: " + "\n" + str(gsearch.best_params_) + "\n" + "Best Score: " + str(gsearch.best_score_) + "\n")
 			
