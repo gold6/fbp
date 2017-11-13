@@ -15,9 +15,9 @@ from sklearn.grid_search import GridSearchCV
 import pylab as pl
 import numpy as np
 
-def RandomForest(data, i, horizon, itr, default):
+def RandomForest(data, i, horizon, itr, default, factor):
 		
-	f = open("RF_Results.txt","w")
+	f = open("RF_Results"+factor+"_"+(str(itr))+".txt","w")
 	best_acc = 0
 	best_mtry = 5
 	count = 0
@@ -28,7 +28,7 @@ def RandomForest(data, i, horizon, itr, default):
 		
 		if default == '1':
 			param_test = {'max_features':range(2,26,1)}
-			gsearch = GridSearchCV(estimator = RandomForestClassifier(n_estimators=1000, criterion='entropy', random_state=1), param_grid = param_test,scoring='accuracy', n_jobs=4, cv=10)
+			gsearch = GridSearchCV(estimator = RandomForestClassifier(n_estimators=1000, criterion='entropy', random_state=1), param_grid = param_test,scoring='roc_auc', n_jobs=4, cv=10)
 			gsearch.fit(X_train, y_train)
 			#f.write("\n" + "Scores: " + str(gsearch.grid_scores_) + "\n" + "Best Params: " + "\n" + str(gsearch.best_params_) + "\n" + "Best Score: " + str(gsearch.best_score_) + "\n")
 			
@@ -62,7 +62,7 @@ def RandomForest(data, i, horizon, itr, default):
 			acc_score = accuracy_score(y_test, y_predict)
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		else:
-			rf = RandomForestClassifier(n_estimators=1000, criterion='entropy', max_features=12, random_state=1)
+			rf = RandomForestClassifier(n_estimators=30, criterion='entropy', max_features=12, random_state=1)#class_weight={0:.9, 1:.1}--this attribute changes weighting which affects decisions, can change as we wish
 
 			rf.fit(X_train, y_train)
 
@@ -75,9 +75,9 @@ def RandomForest(data, i, horizon, itr, default):
 		count += 1
 
 	f.close()
-def RotationForest(data, i, horizon, itr, default):
+def RotationForest(data, i, horizon, itr, default, factor):
 		
-	f = open("RotF_Results.txt","w")
+	f = open("RotF_Results"+factor+"_"+(str(itr))+".txt""w")
 	best_acc = 0
 	best_mtry = 5
 	count = 0
@@ -130,9 +130,9 @@ def RotationForest(data, i, horizon, itr, default):
 
 	f.close()
 
-def GBM(data, i, horizon, itr, default):
+def GBM(data, i, horizon, itr, default, factor):
 		
-	f = open("GBM_Results.txt","w")
+	f = open("GBM_Results_"+factor+"_"+(str(itr))+".txt","w")
 	best_acc = 0
 	best_depth = 2
 	best_learn = .01
@@ -143,8 +143,8 @@ def GBM(data, i, horizon, itr, default):
 		X_train, y_train, X_test, y_test = handlecsv(data, count, horizon, i)
 		
 		if default == '1':
-			param_test = {'n_estimators':range(100,1501,100), 'max_depth':range(2,8,1)}
-			gsearch = GridSearchCV(estimator = GradientBoostingClassifier(learning_rate=.05, random_state=1), param_grid = param_test, cv=10)
+			param_test = {'n_estimators':range(10,201,10), 'max_depth':range(2,8,1)}
+			gsearch = GridSearchCV(estimator = GradientBoostingClassifier(learning_rate=.05, random_state=1), param_grid = param_test, scoring='accuracy', n_jobs=4, cv=10)
 			gsearch.fit(X_train, y_train)
 			#f.write("\n" + "Scores: " + str(gsearch.grid_scores_) + "\n" + "Best Params: " + "\n" + str(gsearch.best_params_) + "\n" + "Best Score: " + str(gsearch.best_score_) + "\n")
 			
@@ -340,28 +340,29 @@ def computestats(y_predict, y_prob, count, y_test, acc_score, f):
 	#f.write(str(auc_score)+"\n")
 
 def main():
-	data = raw_input("Name the data .csv file: ")
+	data_in = raw_input("Name the data .csv file: ")
+	data = data_in + ".csv"
 	i = raw_input("How much test data should we use (in years): ")
 	model = raw_input("What kind of model would you like to use?" + "\n" + "(1) Random Forest" + "\n" + "(2) GBM" + "\n" + "(3) SVM" + "\n"+ "(4) Linear Regression" + "\n"+ "(5) Rotational Forest" + "\n"+ "(6) Compare all methods" + "\n")
 	default = raw_input("Should we find the best parameters or use default?" + "\n" + "(1) Best" + "\n" + "(0) Default" + "\n")
 	horizon = int(raw_input("What is the horizon we want to predict in months? "))
 	itr = int(raw_input("How many times should we iterate? "))
 	if model=='1':
-		RandomForest(data, i, horizon, itr, default)
+		RandomForest(data, i, horizon, itr, default, data_in)
 	if model=='2':
-		GBM(data, i, horizon, itr, default)
+		GBM(data, i, horizon, itr, default, data_in)
 	if model=='3':
 		SVM(data, i, horizon, itr, default)
 	if model=='4':
 		LinReg(data, i, horizon, itr, default)
 	if model=='5':
-		RotationForest(data, i, horizon, itr, default)
+		RotationForest(data, i, horizon, itr, default, data_in)
 	if model=='6':
-		RandomForest(data, i, horizon, itr, default)
-		GBM(data, i, horizon, itr, default)
-		SVM(data, i, horizon, itr, default)
-		LinReg(data, i, horizon, itr, default)
-		RotationForest(data, i, horizon, itr, default)
+		RandomForest(data, i, horizon, itr, default, data_in)
+		GBM(data, i, horizon, itr, default, data_in)
+		#SVM(data, i, horizon, itr, default)
+		#LinReg(data, i, horizon, itr, default)
+		#RotationForest(data, i, horizon, itr, default)
 
 if __name__ == "__main__":
 	main()
