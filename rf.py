@@ -351,37 +351,42 @@ def main():
 	data_in = raw_input("Name the data(s) .csv file: ")
 	data_in_arr = ['' for x in range(0,2)]
 	data_arr = ['' for x in range(0,2)]
+	data_hor = ['' for x in range(0,2)]
+	horizon = int(raw_input("What is the horizon we want to predict in months? "))
 	count = 0
 	while (data_in != 'End'):
 		data = data_in + ".csv"
 		data_in_arr[count] = data_in
 		data_arr[count] = data
+		data_hor[count] = horizon
 		count += 1
 		data_in = raw_input("Name another factor should we use:")
+		horizon = raw_input("What is the horizon for this factor?: ")
 	
 	i = raw_input("How much test data should we use (in years): ")
 	model = raw_input("What kind of model would you like to use?" + "\n" + "(1) Random Forest" + "\n" + "(2) GBM" + "\n" + "(3) SVM" + "\n"+ "(4) Linear Regression" + "\n"+ "(5) Rotational Forest" + "\n"+ "(6) Compare all methods" + "\n")
 	default = raw_input("Should we find the best parameters or use default?" + "\n" + "(1) Best" + "\n" + "(0) Default" + "\n")
-	horizon = int(raw_input("What is the horizon we want to predict in months? "))
+	
 	itr = int(raw_input("How many times should we iterate? "))
 	if model=='1':
 		for y in range(0,2):
-			RandomForest(data_arr[y], i, horizon, itr, default, data_in_arr[y])
+			RandomForest(data_arr[y], i, data_hor[y], itr, default, data_in_arr[y])
+			#print data_arr[y], data_hor[y], data_in_arr[y]
 	if model=='2':
 		for y in range(0,2):
-			GBM(data, i, horizon, itr, default, data_arr[y])
+			GBM(data, i, data_hor[y], itr, default, data_arr[y])
 	if model=='3':
 		SVM(data, i, horizon, itr, default)
 	if model=='4':
 		LinReg(data, i, horizon, itr, default)
 	if model=='5':
 		for y in range(0,2):			
-			RotationForest(data_arr[y], i, horizon, itr, default, data_in_arr[y])
+			RotationForest(data_arr[y], i, data_hor[y], itr, default, data_in_arr[y])
 	if model=='6':
 		for y in range(0,2):
-			RandomForest(data_arr[y], i, horizon, itr, default, data_in_arr[y])
-			GBM(data_arr[y], i, horizon, itr, default, data_in_arr[y])
-			RotationForest(data_arr[y], i, horizon, itr, default,data_in_arr[y])
+			RandomForest(data_arr[y], i, data_hor[y], itr, default, data_in_arr[y])
+			GBM(data_arr[y], i, data_hor[y], itr, default, data_in_arr[y])
+			RotationForest(data_arr[y], i, data_hor[y], itr, default,data_in_arr[y])
 
 if __name__ == "__main__":
 	main()
