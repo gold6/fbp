@@ -73,7 +73,7 @@ def RandomForest(data, i, horizon, itr, default, factor):
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		
 		count += 1
-
+		print (float((count/itr)*100) + "% Done")
 	f.close()
 def RotationForest(data, i, horizon, itr, default, factor):
 		
@@ -134,7 +134,7 @@ def RotationForest(data, i, horizon, itr, default, factor):
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		
 		count += 1
-		print float((count/itr)*100)
+		print (float((count/itr)*100) + "% Done")
 	f.close()
 	print ("Finished All Predictions for " + factor)
 
@@ -151,14 +151,14 @@ def GBM(data, i, horizon, itr, default, factor):
 		X_train, y_train, X_test, y_test = handlecsv(data, count, horizon, i)
 		
 		if default == '1':
-			param_test = {'n_estimators':range(10,201,10), 'max_depth':range(2,8,1)}
-			gsearch = GridSearchCV(estimator = GradientBoostingClassifier(learning_rate=.05, random_state=1), param_grid = param_test, scoring='roc_auc', n_jobs=4, cv=10)
+			param_test = {'n_estimators':range(100,1501,100), 'max_depth':range(2,8,1)}
+			gsearch = GridSearchCV(estimator = GradientBoostingClassifier(learning_rate=.01, random_state=1), param_grid = param_test, scoring='roc_auc', n_jobs=4, cv=10)
 			gsearch.fit(X_train, y_train)
 			#f.write("\n" + "Scores: " + str(gsearch.grid_scores_) + "\n" + "Best Params: " + "\n" + str(gsearch.best_params_) + "\n" + "Best Score: " + str(gsearch.best_score_) + "\n")
 			
 			gbm = gsearch.best_estimator_ #GradientBoostingClassifier(n_estimators=n_est, max_depth=max_d, learning_rate = .05, random_state=1)
 			f.write(str(gbm))
-			print gbm
+			#print gbm
 			gbm.fit(X_train, y_train)
 
 			y_predict = gbm.predict(X_test)
@@ -214,7 +214,7 @@ def GBM(data, i, horizon, itr, default, factor):
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		
 		count += 1
-
+		print (str(float((count/itr)*100)) + "% Done")
 	f.close()
 
 def SVM(data, i, horizon, itr, default):#So far will only predict 1, haven't found a proper config yet
@@ -374,7 +374,7 @@ def main():
 			#print data_arr[y], data_hor[y], data_in_arr[y]
 	if model=='2':
 		for y in range(0,2):
-			GBM(data, i, data_hor[y], itr, default, data_arr[y])
+			GBM(data_arr[y], i, data_hor[y], itr, default, data_in_arr[y])
 	if model=='3':
 		SVM(data, i, horizon, itr, default)
 	if model=='4':
