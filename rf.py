@@ -34,26 +34,7 @@ def RandomForest(data, i, horizon, itr, default, factor):
 			
 			rf = gsearch.best_estimator_
 			f.write(str(rf))
-			#for j in range (1, 25):
-			#	rf = RandomForestClassifier(n_estimators=1000, criterion='entropy', max_features=j, random_state=1)
-
-			#	rf.fit(X_train, y_train)
-
-			#	y_predict = rf.predict(X_test)
-
-			#	y_prob = rf.predict_proba(X_test)
-		
-			#	acc_score = accuracy_score(y_test, y_predict)
-			#	if acc_score > best_acc:
-			#		best_acc = acc_score
-			#		best_mtry = j
-				#f.write("\n" + "M_try: " + str(j) + "\n")
-				#computestats(y_predict, y_prob, count, y_test, f)
-
-			#f.write("\n" + "Iteration: " + str(count) + " Best M_Try: " + str(best_mtry)+ "\n")
 			
-			#rf = RandomForestClassifier(n_estimators=1000, criterion='entropy', max_features=best_mtry, random_state=1)
-
 			rf.fit(X_train, y_train)
 
 			y_predict = rf.predict(X_test)
@@ -73,7 +54,7 @@ def RandomForest(data, i, horizon, itr, default, factor):
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		
 		count += 1
-		print (float((count/itr)*100) + "% Done")
+		print (factor + " Iteration " + str(count) + " Done")
 	f.close()
 def RotationForest(data, i, horizon, itr, default, factor):
 		
@@ -93,27 +74,6 @@ def RotationForest(data, i, horizon, itr, default, factor):
 			
 			rotf = gsearch.best_estimator_
 			f.write(str(rf))
-		
-		
-		#	for j in range (1, 50):
-		#		rotf = RRForestClassifier(n_estimators=30, criterion='entropy', max_depth=15, max_features=j, random_state=1)
-
-		#		rotf.fit(X_train, y_train)
-
-		#		y_predict = rotf.predict(X_test)
-
-		#		y_prob = rotf.predict_proba(X_test)
-		
-		#		acc_score = accuracy_score(y_test, y_predict)
-		#		if acc_score > best_acc:
-		#			best_acc = acc_score
-		#			best_mtry = j
-				#f.write("\n" + "M_try: " + str(j) + "\n")
-				#computestats(y_predict, y_prob, count, y_test, f)
-
-		#	f.write("\n" + "Iteration: " + str(count) + " Best M_Try: " + str(best_mtry)+ "\n")
-			
-		#	rotf = RRForestClassifier(n_estimators=30, criterion='entropy', max_depth=15, max_features=best_mtry, random_state=1)
 
 			rotf.fit(X_train, y_train)
 
@@ -134,7 +94,7 @@ def RotationForest(data, i, horizon, itr, default, factor):
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		
 		count += 1
-		print (float((count/itr)*100) + "% Done")
+		print (factor + " Iteration " + str(count) + " Done")
 	f.close()
 	print ("Finished All Predictions for " + factor)
 
@@ -167,39 +127,7 @@ def GBM(data, i, horizon, itr, default, factor):
 			acc_score = accuracy_score(y_test, y_predict)
 
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
-			#for k in range (2, 8):
-			#	for j in [.01, .05, .1, .15]:
-			#		gbm = GradientBoostingClassifier(n_estimators=1500, max_depth=k, learning_rate = j, random_state=1)
 
-			#		gbm.fit(X_train, y_train)
-
-			#		y_predict = gbm.predict(X_test)
-
-			#		y_prob = gbm.predict_proba(X_test)
-		
-			#		acc_score = accuracy_score(y_test, y_predict)
-			#		if acc_score > best_acc:
-			#			best_acc = acc_score
-			#			best_depth = k
-			#			best_learn = j
-					#f.write("\n" + "M_try: " + str(j) + "\n")
-					#f.write("\n" + "Learning Rate: " + str((k*.1)) + "\n")
-					#f.write("\n" + "Accuracy Score: " + str(acc_score) + "\n")
-					#computestats(y_predict, y_prob, count, y_test, f)
-
-			#f.write("\n" + "Iteration: " + str(count) + " Best Depth: " + str(best_depth)+ "\n")
-			#f.write("\n" + "Iteration: " + str(count) + " Best Learning Rate: " + str(best_learn)+ "\n")			
-			
-			#gbm = GradientBoostingClassifier(n_estimators=1500, max_depth=best_depth, learning_rate = best_learn, random_state=1)
-
-			#gbm.fit(X_train, y_train)
-
-			#y_predict = gbm.predict(X_test)
-
-			#y_prob = gbm.predict_proba(X_test)
-			#acc_score = accuracy_score(y_test, y_predict)
-
-			#computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		else:
 
 			gbm = GradientBoostingClassifier(n_estimators=1500, max_depth=5, learning_rate = 0.1, random_state=1)
@@ -214,7 +142,7 @@ def GBM(data, i, horizon, itr, default, factor):
 			computestats(y_predict, y_prob, count, y_test, acc_score, f)
 		
 		count += 1
-		print (str(float((count/itr)*100)) + "% Done")
+		print (factor + " Iteration " + str(count) + " Done")
 	f.close()
 
 def SVM(data, i, horizon, itr, default):#So far will only predict 1, haven't found a proper config yet
@@ -337,31 +265,32 @@ def computestats(y_predict, y_prob, count, y_test, acc_score, f):
 	#pl.xlabel('False Positives')
 	#pl.ylabel('True Positives')
 	#pl.savefig('ROC'+(str(count))+'.png')
-	#auc_score = roc_auc_score(y_test, y_predict)
-
 	f.write("\n" + " Iteration " + str(count) + "\n")
 	f.write(str(y_prob) + "\n")
 	f.write(str(y_predict) +"\n")
 	f.write(str(acc_score)+"\n")
 	f.write(str(pd.crosstab(y_test, y_predict, rownames=['True'], colnames=['Predicted'],margins=True))+"\n")
-	
-	#f.write(str(auc_score)+"\n")
+	try:
+		auc_score = roc_auc_score(y_test, y_prob[:,1])
+		f.write("ROC_AUC: " + str(auc_score)+"\n")
+	except ValueError:
+		pass
 
 def main():
 	data_in = raw_input("Name the data(s) .csv file: ")
 	data_in_arr = ['' for x in range(0,2)]
 	data_arr = ['' for x in range(0,2)]
-	data_hor = ['' for x in range(0,2)]
+	#data_hor = ['' for x in range(0,2)]
 	horizon = int(raw_input("What is the horizon we want to predict in months? "))
 	count = 0
 	while (data_in != 'End'):
 		data = data_in + ".csv"
 		data_in_arr[count] = data_in
 		data_arr[count] = data
-		data_hor[count] = horizon
+		#data_hor[count] = horizon
 		count += 1
 		data_in = raw_input("Name another factor should we use:")
-		horizon = raw_input("What is the horizon for this factor?: ")
+		#horizon = raw_input("What is the horizon for this factor?: ")
 	
 	i = raw_input("How much test data should we use (in years): ")
 	model = raw_input("What kind of model would you like to use?" + "\n" + "(1) Random Forest" + "\n" + "(2) GBM" + "\n" + "(3) SVM" + "\n"+ "(4) Linear Regression" + "\n"+ "(5) Rotational Forest" + "\n"+ "(6) Compare all methods" + "\n")
@@ -370,23 +299,22 @@ def main():
 	itr = int(raw_input("How many times should we iterate? "))
 	if model=='1':
 		for y in range(0,2):
-			RandomForest(data_arr[y], i, data_hor[y], itr, default, data_in_arr[y])
-			#print data_arr[y], data_hor[y], data_in_arr[y]
+			RandomForest(data_arr[y], i, horizon, itr, default, data_in_arr[y])
 	if model=='2':
 		for y in range(0,2):
-			GBM(data_arr[y], i, data_hor[y], itr, default, data_in_arr[y])
+			GBM(data_arr[y], i, horizon, itr, default, data_in_arr[y])
 	if model=='3':
 		SVM(data, i, horizon, itr, default)
 	if model=='4':
 		LinReg(data, i, horizon, itr, default)
 	if model=='5':
 		for y in range(0,2):			
-			RotationForest(data_arr[y], i, data_hor[y], itr, default, data_in_arr[y])
+			RotationForest(data_arr[y], i, horizon, itr, default, data_in_arr[y])
 	if model=='6':
 		for y in range(0,2):
-			RandomForest(data_arr[y], i, data_hor[y], itr, default, data_in_arr[y])
-			GBM(data_arr[y], i, data_hor[y], itr, default, data_in_arr[y])
-			RotationForest(data_arr[y], i, data_hor[y], itr, default,data_in_arr[y])
+			RandomForest(data_arr[y], i, horizon, itr, default, data_in_arr[y])
+			GBM(data_arr[y], i, horizon, itr, default, data_in_arr[y])
+			RotationForest(data_arr[y], i, horizon, itr, default,data_in_arr[y])
 
 if __name__ == "__main__":
 	main()
